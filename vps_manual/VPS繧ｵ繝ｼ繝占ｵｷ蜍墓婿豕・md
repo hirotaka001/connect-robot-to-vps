@@ -1,0 +1,24 @@
+# VPSサーバ起動方法
+
+## 1. バックエンド(HTTPサーバ)起動
+```
+cd ~/4dpf/vps_pf/estimate_query
+./kill_gunicorn.sh
+gunicorn daemon.gu_robot:app_c -b localhost:8080 --threads 4
+```
+
+## 2.マップサーバ起動
+※ 地図情報を指定して、マップサーバを起動する。daemon 側にも設定する必要があるので注意  
+ `vps_pf/estimate_query/daemon/gu_robot.py`参照  
+複数のマップを推定する場合、複数起動する
+```
+# 310A
+colmap server --database_path ~/4dpf/bagtools/colmap_lab/VPS_0523_er_INT8/r2d2_5_100.db --input_path ~/4dpf/bagtools/colmap_lab/VPS_0523_er_INT8/sfm_fixed/ --server_port 5555
+```
+
+## 推論位置確認
+クエリが投げられた時に、点群上のどの位置を推定したかを確認できる
+```
+cd ~/4dpf/vps_pf/querymonitor
+./querymonitor --sfm ~/4dpf/bagtools/colmap_lab/VPS_0523_er_INT8/sfm_fixed/ --filter_size 30
+```

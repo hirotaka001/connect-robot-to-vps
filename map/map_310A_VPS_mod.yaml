@@ -1,0 +1,12 @@
+image: /home/rbag/w_dir/ros_map/map_310A_VPS_mod3.png
+resolution: 0.023000
+
+origin: [-13.6850, -4.2456, 0.000000]
+negate: 0
+occupied_thresh: 0.45
+free_thresh: 0.44
+
+# gray
+#occupied_thresh: 0.45
+#free_thresh: 0.30
+

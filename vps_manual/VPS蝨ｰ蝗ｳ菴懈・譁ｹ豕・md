@@ -1,0 +1,185 @@
+
+
+## 前提
+VPS PF環境は構築されているとする
+
+合わせて「研究所VPS PF構築マニュアル」も参照のこと
+## 撮影
+1. thetaVで全天球映像を撮影  
+※カメラは全天周を動画撮影できれば theta でなくとも可能  
+※カメラや撮影時の注意については、「研究所VPS PF構築マニュアル」を参照のこと  
+<img src=attachment/theta_sp.png>  
+
+2. 物理量計算のために、わかりやすい箇所の実際の長さを測定しておく（なるべく長いものがよい）   
+3. mp4を全天球からエクイレクタングラー(equirectangular)に変換。  
+   thetaの場合、windowsのソフトで行う(**天頂補正ONにすること**)  
+   ※ 画像ファイル名の先頭8文字は同マップを示す意味として使われるので注意
+    <img src=attachment/theta_er.png>  
+    <img src=attachment/theta_input.png>  
+
+
+
+## 特徴量抽出
+VPS PFへログインする  
+ツールを実行する  
+```
+~/4dpf/vps_pf/makemap_tools/auto_gui.sh  
+```
+### ツールの設定
+ダイアログが表示されるので適切なものを選択していく  
+
+1. 特徴量の選択。基本的に変更の必要なし  
+<img src=attachment/auto_gui_01.png>
+
+2. 実行する機能を選択する。全て実行する必要があるが、  
+地図作成がうまくいかない場合、特定の項目だけやりなおしたりすることが可能  
+<img src=attachment/auto_gui_02.png>
+
+3. 撮影したカメラの種類を選択する  
+<img src=attachment/auto_gui_03.png>  
+
+4. グローバル特超量の選択。基本的に変更の必要なし  
+<img src=attachment/auto_gui_04.png>
+
+5. マッチングアルゴリズムの選択  
+基本は SEQUENTIAL_AND_SIMILARITY でよい
+映像の初期位置と終点が同じ場合、(Loop)を選ぶ  
+<img src=attachment/auto_gui_08.png>  
+
+6. 画像の出力フォルダと、DBを出力するプロジェクトフォルダを設定する
+
+7. オプションパラメータの設定(i)  
+画像切り出し時に、映像から何フレーム毎に切り出すかの設定  
+<img src=attachment/auto_gui_05.png>  
+
+8. オプションパラメータの設定(ii)  
+マッチング時に参照する付近のブロックの数  
+<img src=attachment/auto_gui_06.png>  
+
+9. オプションパラメータの設定(iii)  
+マッチング時、類似画像の上位からの参照数  
+<img src=attachment/auto_gui_07.png>  
+
+### 処理手順
+上記、設定後下記が自動で実行される  
+1. Extract_normal_photos  
+エクイレクタングラー映像よりVIEW毎に画像を切り出す  
+指定した画像フォルダに画像が出力される。(VIEW毎に別フォルダ)   
+2. Create new base DB  
+切り出した画像から基本のDBを作成する。プロジェクトフォルダにdb.dbがが生成される  
+3. Extract features  
+各画像から特徴量を抽出する。(CUDAエラーがでる場合 4dpf/vps_pf/estimate_query/kill_gnicorn.sh を実行すること？)  
+画像フォルダの画像毎に .msk(人などのマスク情報) ファイルと .r2d2(特徴量) ファイルができる  
+4. マッチングリストを作成  
+近接ブロックの検索数(default:5)  
+類似画像上位検索数(default:100)  
+マッチング結果はプロジェクトフォルダに match_list_[x]_[y].txt で保存される  
+[x] が指定したグロック検索数、[y] が類似画像上位検索数の値となる  
+5. GeM計算(グローバル特徴量)  
+グローバル特超量を計算する  
+画像フォルダの画像毎に .APGeM50_whiten ファイルができる  
+6. MakeDB  
+プロジェクトフォルダに r2d2_[x]_[y].db が生成される。[x]、[y]の値はマッチングリストと同様に、  
+[x] が指定したグロック検索数、[y] が類似画像上位検索数の値となる
+7.CustomFeatureMatching  
+
+## colmap のキャリブレーション確認
+`colmap_vps/src/util/komo.h` 内の fixed clibration param の設定を確認すること  
+変更した場合は下記コマンド build する必要あり  
+```
+cd colmap_vps/build/
+make -j 12
+```
+## 3D再構成(地図生成)
+colmap開く
+```
+4dpf/colmap_vps/build/src/exe/colmap gui
+```
+
+### 新規プロジェクト作成  
+1. メニューより新規プロジェクトを作成する   
+<img src=attachment/colmap_08.png>  
+
+2. ダイアログが表示されるので、dbファイル(r2d2_x_x.db)と画像フォルダを選択  
+<img src=attachment/colmap_06.png>  
+
+3. プロジェクト生成後、プロジェクトを保存 (慣例としてproject.iniという名前にすることが多い)    
+databese management で画像やカメラキャリブレーションの設定を確認することができる、  
+前段のDB作成や特徴量抽出が正常に行われていることを確認するためにも、推奨  
+下記は確認例の画像
+
+<img src=attachment/colmap_01.png>
+<img src=attachment/colmap_02.png>
+<img src=attachment/colmap_03.png>
+<img src=attachment/colmap_04.png>
+    
+
+### 再構成実行
+1. Reconstruction option を推奨設定に変更する  
+※ 「研究所VPS PF構築マニュアル」参照  
+メニューより Reconstruction options を選択  
+<img src=attachment/colmap_05.png>   
+
+2. パラメータを下記のように設定する(赤色の部分を変更する)  
+<img src=attachment/colmap_param_01.png>
+<img src=attachment/colmap_param_02.png>  
+<img src=attachment/colmap_param_03.png>
+<img src=attachment/colmap_param_04.png>  
+
+3. メニューより Reconstruction 開始  
+※ 画像や設定によっては数時間かかる  
+<img src=attachment/colmap_09.png>  
+
+4. 完了後、点群を確認して問題ないか確認する  
+※  複数のモデルが生成されている場合、間違っていることが多い  
+5. Export as text で model よりモデル(sfm)を保存する  
+<img src=attachment/colmap_07.png>  
+
+
+
+## 天頂補正・物理量正規化
+ツールを起動する
+```
+~/4dpf/vps_pf/makemap_tools/auto_conv.sh
+```
+### 手順  
+1. 先ず天頂補正を行う。ダイアログより Znith image 選択  
+<img src=attachment/auto_conv_01.png>  
+
+2. 保存した sfm/0 を選択  
+3. 出力するフォルダを指定して完了(慣例としてsfm/0_zとすることが多い)  
+4. 再び auto_conv 起動  
+5. 今度は物理正規化のため physical_conv y-fixed 選択  
+<img src=attachment/auto_conv_02.png>  
+
+sfmと出力フォルダ、画像を選択  
+GUI上で操作を行う。  
+```
+正規化を行うための2点とその距離を指定する。
+距離は実際の距離を指定するので、測量していること。
+1). 球半径とXYZ座標のスライダを動かして、点群上の赤い球体を測量した位置へ移動させる
+2). 画像場所選択を押下すると、右下にその位置を含む4枚の画像＋赤い球体が重畳されるので意図した位置、
+    画像間で大きくズレていないことを確認
+    (画像間で位置が完全に一致することが理想だが、ある程度あっていればOK)
+2). 問題なければ、Pairセット1を押下する。押下すると元sfm座標に点群座標がセットされる
+3). 変換後sfm座標に (0,0,0) をセットする。この点が変換後の原点となる
+4). もう一度 1) と 2) の手順で、2点目の位置へ移動させる。
+5). 問題なければ、Pairセット2 を押下して、セット2 の元sfm座標をセット
+6). 変換後sfm座標には測定した値を, x軸かz軸にメートルで指定する。例えば(2, 0, 0)など
+　　※ 軸や単位(メートル)は変換後座標系を決定するものなので、その後の用途に応じて設定することが望ましい？
+7). Pair保存 を押下すると変換が行われ、指定した出力フォルダに sfm が出力される
+```
+<img src=attachment/auto_conv_03.png>    
+
+6. 出力するフォルダを指定して完了(慣例としてsfm_fixedとすることが多い)
+
+## 推論に使用するための設定
+1. `vps_pf/estimate_query/daemon/gu_robot.py` を修正して作成したモデルを使用するように変更する  
+地図は複数設定できるので、配列の順序に注意すること  
+<img src=attachment/estimate_01.png>  
+
+2. 実行時のモデルの位置も変更する  
+<img src=attachment/estimate_02.png>  
+
+
+

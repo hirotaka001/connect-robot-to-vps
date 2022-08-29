@@ -1,0 +1,1 @@
+python3 mqtt_pub.py cmd_to_robot "turtlebot3|move|stop|"

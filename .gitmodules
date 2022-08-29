@@ -1,0 +1,3 @@
+[submodule "vps2dmap"]
+	path = vps2dmap
+	url = http://kros.sig.kddilabs.jp/robot/vps2dmap.git
