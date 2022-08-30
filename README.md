@@ -88,6 +88,7 @@ python3 mqtt_sub_insert_db.py vps_result
 
 http://172.19.73.134:3000 を開く ユーザ名は 「admin」
 ページ左上の「General」をクリック
+
 ![image](https://user-images.githubusercontent.com/47406018/187331021-48c93a86-2f24-4a0e-a1ba-0920de20a691.png)
 
 「Dashboard for my plugin」をクリック
@@ -95,6 +96,7 @@ http://172.19.73.134:3000 を開く ユーザ名は 「admin」
 ![image](https://user-images.githubusercontent.com/47406018/187331038-3bdcc4bc-e780-4d1c-ac5e-bec3363451c1.png)
 
 ページ右上のデータ表示期間を「Last 1 hour」、データ更新感覚を「1s」に設定」
+
 ![image](https://user-images.githubusercontent.com/47406018/187331053-d7aaac68-bb2c-4b85-adb4-46d2f5f4cfe1.png)
 
 Tips Grafanaのダッシュボードにアクセスできない場合、サービスが起動しているか確認する
