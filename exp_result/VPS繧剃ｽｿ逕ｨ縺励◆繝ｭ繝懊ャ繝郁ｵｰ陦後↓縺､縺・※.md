@@ -240,4 +240,5 @@ curl -X POST -F qimage=@/test.jpg-F “message_id=random_string” –F “Focal
 VPSを使用した走行方法3つに、オリジナルのNavigationStackを追加して比較走行  
 ショートコースとロングコースの2つで検証  
 ロングコースに関しては、ゴールできていないパターンが多いので、走行状況のまとめ  
-[走行結果まとめpptx](https://growi.sig.kddilabs.jp/attachment/62bbb811d9f966a805239622)
+[Uploading 走行結果まとめ.pptx…]()
+
