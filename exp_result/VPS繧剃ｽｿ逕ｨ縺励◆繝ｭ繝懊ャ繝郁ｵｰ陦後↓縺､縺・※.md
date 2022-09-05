@@ -336,8 +336,8 @@ forward の時に止めると、ロボットが前進し続ける
 1. python remote_control.py cmd_to_robot turlteobt3
 
 # 他
-- [VPS地図作成方法](https://github.com/hirotaka001/connect-robot-to-vps/tree/master/vps_manual/VPS%E5%9C%B0%E5%9B%B3%E4%BD%9C%E6%88%90%E6%96%B9%E6%B3%95.md)
-- [VPSサーバ起動方法](https://github.com/hirotaka001/connect-robot-to-vps/tree/master/vps_manual/VPS%E3%82%B5%E3%83%BC%E3%83%90%E8%B5%B7%E5%8B%95%E6%96%B9%E6%B3%95.md)
+- [VPS地図作成方法](https://github.com/hirotaka001/connect-robot-to-vps/blob/master/vps_manual/VPS%E8%9D%A8%EF%BD%B0%E8%9D%97%EF%BD%B3%E8%8F%B4%E6%87%88%E3%83%BB%E8%AD%81%EF%BD%B9%E8%B1%95%E3%83%BBmd)
+- [VPSサーバ起動方法](https://github.com/hirotaka001/connect-robot-to-vps/blob/master/vps_manual/VPS%E7%B9%A7%EF%BD%B5%E7%B9%9D%EF%BD%BC%E7%B9%9D%E5%8D%A0%EF%BD%B5%EF%BD%B7%E8%9C%8D%E5%A2%93%E5%A9%BF%E8%B1%95%E3%83%BBmd)
  - VPS送信コマンドサンプル(詳細は 研究所VPS PF利用マニュアル_r0.9.pdf )  
 ```
 curl -X POST -F qimage=@/test.jpg-F “message_id=random_string” –F “FocalLengthIn35mmFilm=28.0”http://vps-load-balancer-123456.ap-northeast-1.elb.amazonaws.com:1234/map_token_id/
