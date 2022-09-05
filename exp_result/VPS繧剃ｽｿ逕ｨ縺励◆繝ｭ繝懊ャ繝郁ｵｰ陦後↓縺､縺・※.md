@@ -239,6 +239,4 @@ curl -X POST -F qimage=@/test.jpg-F “message_id=random_string” –F “Focal
 # 走行実験
 VPSを使用した走行方法3つに、オリジナルのNavigationStackを追加して比較走行  
 ショートコースとロングコースの2つで検証  
-ロングコースに関しては、ゴールできていないパターンが多いので、走行状況のまとめ  
-[Uploading 走行結果まとめ.pptx…]()
-
+ロングコースに関しては、ゴールできていないパターンが多いので、走行状況のまとめを参照
