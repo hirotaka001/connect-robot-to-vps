@@ -32,7 +32,7 @@ http://kros.sig.kddilabs.jp/robot/vps2dmap
 ### 〇VPS2Dマップ変換機能
 VPS点群から作成したVPS2DマップをNavigationStackで使用するための処理
 詳細は下記、現行手動で行う箇所がある  
-[vps_to_ros.md](http://kros.sig.kddilabs.jp/ha-takahashi/communication-module-experimental-tool/-/blob/feature-vps-cooperation/vps_manual/vps_to_ros.md)
+[vps_to_ros.md](https://github.com/hirotaka001/connect-robot-to-vps/tree/master/vps_manual/vps_to_ros.md)
 
 VPS->ROSへのマップ変換イメージ  
 <img src=attachment/vps_ros_map_convert.png>
@@ -65,7 +65,7 @@ VPS座標系からROS座標系へ変換、NavigationStackで使用できるよ�
 ### 〇turtlebot3 のカメラ映像を送信する機能
 turtlebot3 にカメラを取付、その映像を送信する
 送信は ROS の topic を使用して publish する  
-gitlab: [cam_subscriber.py L153](http://kros.sig.kddilabs.jp/ha-takahashi/communication-module-experimental-tool/-/blob/feature-vps-cooperation/cam_subscriber/script/cam_subscriber.py#L153)
+gitlab: [cam_subscriber.py L153](https://github.com/hirotaka001/connect-robot-to-vps/tree/master/cam_subscriber/script/cam_subscriber.py#L153)
 
 ### 〇VPS2Dマップ作成＆設定
 1 と同じ機能
@@ -75,18 +75,18 @@ gitlab: [cam_subscriber.py L153](http://kros.sig.kddilabs.jp/ha-takahashi/commun
 カメラ映像を受信した際の callback でそのまま VPSクライアントへ通知 へ VPSクライアントからPOST する  
 受信画像全てを送信すると、VPSの処理速度に比べて頻度が多すぎるので、間引き処理が含まれる  
 またVPSクライアントは別スレッドで処理される  
-gitlab: [vps_client.py](http://kros.sig.kddilabs.jp/ha-takahashi/communication-module-experimental-tool/-/blob/feature-vps-cooperation/cam_subscriber/script/vps_client.py)
+gitlab: [vps_client.py](https://github.com/hirotaka001/connect-robot-to-vps/tree/master/cam_subscriber/script/vps_client.py)
 
 ### 〇MQTTを使用するためのクライアント機能
 MQTTブローカはサポートPC外にあるので、そこへ接続してMQTTメッセージを送信を行うためのクライアント 
 前述のROSノード内に実装する  
-gitlab: [cam_subscriber.py L180](http://kros.sig.kddilabs.jp/ha-takahashi/communication-module-experimental-tool/-/blob/feature-vps-cooperation/cam_subscriber/script/cam_subscriber.py#L180) 
+gitlab: [cam_subscriber.py L180](https://github.com/hirotaka001/connect-robot-to-vps/tree/master/cam_subscriber/script/cam_subscriber.py#L180) 
 
 ### 〇VPSのレスポンスを処理、DBへ格納する機能
 外部からの位置情報確認のために [Grafana](https://grafana.com/) を使用したい。
 Grafana に表示するための、DB へデータを格納する。  
 データのやり取りは、MQTT を使用する  
-gitlab: [mqtt_sub_insert.py](http://kros.sig.kddilabs.jp/ha-takahashi/communication-module-experimental-tool/-/blob/feature-vps-cooperation/insert_vps_result/mqtt_sub_insert_db.py)
+gitlab: [mqtt_sub_insert.py](https://github.com/hirotaka001/connect-robot-to-vps/tree/master/insert_vps_result/mqtt_sub_insert_db.py)
 ```
 PostgreSQL情報
 データベース名: rbag
@@ -107,18 +107,18 @@ PostgreSQL情報
 ```
 ### 〇VPSのレスポンスを処理、座標変換ノードへ通知する機能
 ROSトピックとして、VPSの自己位置情報を publish する  
-gitlab: [cam_subscriber.py L165](http://kros.sig.kddilabs.jp/ha-takahashi/communication-module-experimental-tool/-/blob/feature-vps-cooperation/cam_subscriber/script/cam_subscriber.py#L165)
+gitlab: [cam_subscriber.py L165](https://github.com/hirotaka001/connect-robot-to-vps/tree/master/cam_subscriber/script/cam_subscriber.py#L165)
 
 ### 〇VPS座標->ROS座標変換機能
 subscribe した VPS の自己位置情報を ROS座標系に変換する。  
 原点、XYZ軸などを変換する。VPSの原点や座標軸はVPS地図作成時に決定されるので、  
 変換は地図ごとに異なるので注意  
-gitlab: [cam_subscriber.py L111](http://kros.sig.kddilabs.jp/ha-takahashi/communication-module-experimental-tool/-/blob/feature-vps-cooperation/cam_subscriber/script/cam_subscriber.py#L111)  
+gitlab: [cam_subscriber.py L111](https://github.com/hirotaka001/connect-robot-to-vps/tree/master/cam_subscriber/script/cam_subscriber.py#L111)  
 
 ### 〇ROS座標での自己位置情報をNavigationStackが使用できるように加工する機能
 NavigationStack が使用する /tf はある座標系から別の座標系への変換を示す。  
 amcl の[実装](https://github.com/ros-planning/navigation/blob/6e9de3f16c76329fc8d218189d90e4ebe51d61c2/amcl/src/amcl_node.cpp#L1446)を参考にVPSから取得した自己位置を変換して、/tf(/map->/odom)を出力する
-gitlab: [tf_vps_position.cpp](http://kros.sig.kddilabs.jp/ha-takahashi/communication-module-experimental-tool/-/blob/feature-vps-cooperation/tf_vps_position/src/tf_vps_position.cpp)  
+gitlab: [tf_vps_position.cpp](https://github.com/hirotaka001/connect-robot-to-vps/blob/master/tf_vps_position/src/tf_vps_position.cpp)  
 <img src=attachment/tf_nav.png width=400> 
 
 ## 実行&走行方法
@@ -144,26 +144,26 @@ gitlab: [tf_vps_position.cpp](http://kros.sig.kddilabs.jp/ha-takahashi/communica
 
 ### 〇VPSのレスポンスを処理、Waypoint走行機能へ通知する機能
 VPSのレスポンスを処理して、自己位置を waypoint 走行機能へキューを使い通知  
-gitlab: [cam_subscriber.py L104](http://kros.sig.kddilabs.jp/ha-takahashi/communication-module-experimental-tool/-/blob/feature-vps-cooperation/cam_subscriber/script/cam_subscriber.py#L104)
+gitlab: [cam_subscriber.py L104](https://github.com/hirotaka001/connect-robot-to-vps/tree/master/cam_subscriber/script/cam_subscriber.py#L104)
 
 ### 〇Waypoint走行機能
 別スレッドで稼働。キューよりVPS自己位置を取得、次 waypoint との距離、角度を計算して、
 前進もしくは旋回(右、左)を決定する。  
 ロボ移動中のカメラのブレを考慮して、前進、旋回を一定時間行った後は、一時停止する機能を含む  
-gitlab: [auto_driving_controller.py](http://kros.sig.kddilabs.jp/ha-takahashi/communication-module-experimental-tool/-/blob/feature-vps-cooperation/cam_subscriber/script/auto_driving_controller.py)  
-gitlab: [trajectory_planner.py](http://kros.sig.kddilabs.jp/ha-takahashi/communication-module-experimental-tool/-/blob/feature-vps-cooperation/cam_subscriber/script/trajectory_planner.py)
+gitlab: [auto_driving_controller.py](https://github.com/hirotaka001/connect-robot-to-vps/tree/master/cam_subscriber/script/auto_driving_controller.py)  
+gitlab: [trajectory_planner.py](https://github.com/hirotaka001/connect-robot-to-vps/tree/master/cam_subscriber/script/trajectory_planner.py)
 
 ### 〇通信Mへの走行指示通知機能
 走行指示にしたがって、通信M用のコマンドを作成して通知する。
 通信には MQTT を使用する  
-gitlab: [robo_commander.py](http://kros.sig.kddilabs.jp/ha-takahashi/communication-module-experimental-tool/-/blob/feature-vps-cooperation/cam_subscriber/script/robo_commander.py)
+gitlab: [robo_commander.py](https://github.com/hirotaka001/connect-robot-to-vps/tree/master/cam_subscriber/script/robo_commander.py)
 
 ## 実行&走行方法
 [Growiに記載](https://growi.sig.kddilabs.jp/user/xta-tadanou/20220317_VPSによるturtlebot3自動走行手順)
 
 # 他
-- [VPS地図作成方法](http://kros.sig.kddilabs.jp/ha-takahashi/communication-module-experimental-tool/-/blob/feature-vps-cooperation/vps_manual/VPS%E5%9C%B0%E5%9B%B3%E4%BD%9C%E6%88%90%E6%96%B9%E6%B3%95.md)
-- [VPSサーバ起動方法](http://kros.sig.kddilabs.jp/ha-takahashi/communication-module-experimental-tool/-/blob/feature-vps-cooperation/vps_manual/VPS%E3%82%B5%E3%83%BC%E3%83%90%E8%B5%B7%E5%8B%95%E6%96%B9%E6%B3%95.md)
+- [VPS地図作成方法](https://github.com/hirotaka001/connect-robot-to-vps/tree/master/vps_manual/VPS%E5%9C%B0%E5%9B%B3%E4%BD%9C%E6%88%90%E6%96%B9%E6%B3%95.md)
+- [VPSサーバ起動方法](https://github.com/hirotaka001/connect-robot-to-vps/tree/master/vps_manual/VPS%E3%82%B5%E3%83%BC%E3%83%90%E8%B5%B7%E5%8B%95%E6%96%B9%E6%B3%95.md)
  - VPS送信コマンドサンプル(詳細は 研究所VPS PF利用マニュアル_r0.9.pdf )  
 ```
 curl -X POST -F qimage=@/test.jpg-F “message_id=random_string” –F “FocalLengthIn35mmFilm=28.0”http://vps-load-balancer-123456.ap-northeast-1.elb.amazonaws.com:1234/map_token_id/
