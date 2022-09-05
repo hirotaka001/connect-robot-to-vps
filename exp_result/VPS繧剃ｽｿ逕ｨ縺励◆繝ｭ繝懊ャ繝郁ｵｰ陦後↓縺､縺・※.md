@@ -122,7 +122,74 @@ gitlab: [tf_vps_position.cpp](https://github.com/hirotaka001/connect-robot-to-vp
 <img src=attachment/tf_nav.png width=400> 
 
 ## 実行&走行方法
-[Growiに記載](https://growi.sig.kddilabs.jp/user/xta-tadanou/20220627_VPSによるturtlebot3自動走行手順(NavigationStack))
+### 概要
+NavigationStackをVPSを組み合わせて自律走行する手順  
+amcl の代わりに VPS を位置情報として使用する。
+
+### 端末情報
+| 端末         | IP            | 詳細                   |
+| ------------ | ------------- | ---------------------- |
+| Turtlebot3   | 192.168.11.11 | 走行ロボ               |
+| miniPC       | 192.168.11.5  |                        |
+| 通信M        | 192.168.11.2  | ロボへ走行コマンド送信 |
+| VPSサーバ    | 172.19.73.224 |                        |
+| MQTTブローカ | 172.19.73.190 | 仮PF                   |
+
+### VPSについて
+VPSサーバは起動済みで、APIが使用できる状態であること
+
+### ロボ準備
+**実験後は必ずバッテリーを外す事**
+1. Turtlebot3 のバッテリーを充電する
+2. Turtlebot3 をバッテリー駆動に切り替える
+3. PCから ssh pi@192.168.11.11 で接続できることを確認  
+(稀に繋がらないことがあるので、その場合 OpenCR の電源スイッチをON/OFF で再起動する)  
+※ OpenCR は ラズパイ の下にあるボードのこと
+
+### 手順
+各種端末に ssh でログインして操作する必要があるが、ここでは miniPC からの操作を想定している  
+4つのターミナルを使用し、Terminal1から順に実施すること
+
+#### 1.Terminal1(Turtlebot3)
+roscore & turtlebot3基本ノード & カメラノードを起動する  
+※Lidarを繋いでいない場合、エラーがでるが無視する
+1. ssh pi@192.168.11.11 <!-- turtlebot -->
+2. ping 192.168.11.2 (通信Mへpingを打って、疎通確認)
+3. cd catkin_ws
+4. ./tb3-bringup.sh
+
+#### 2.Terminal2(VPSClientを含むROSノード)
+1. cd ~/catkin_ws/src/cam_subscriber/script
+2. rosrun cam_subscriber cam_subscriber.py   
+
+このノードは下記の機能を実行する。
+- Turtlebot3カメラ画像をSubscribe(ROS) 受信画像はウィンドウでも表示
+- カメラ画像をVPSへPOST&結果を受け取る(http)
+- VPS結果をMQTTでPublish(MQTT)
+
+#### 3.Terminal3(VPSの結果を/tfとして出力)
+VPS結果をMQTT経由で取得、/tf を計算してPubする  
+```
+rosrun tf_vps_position  tf_vps_position_node
+```
+
+#### 4.Terminal4(NavigationStack)
+amclを起動しないように修正した launch と、VPS点群より作成した2Dマップを指定して起動する  
+```
+roslaunch turtlebot3_navigation turtlebot3_navigation_test.launch map_file:=$HOME/w_dir/ros_map/map_310A_VPS_0523_tb3.yaml
+```
+
+#### 5. rviz
+rviz上で 2D Nav goal を指定することで、走行開始。(local_costマップの計算が終わっていない場合、走りださないので待つ)  
+![62b95ebd49c4062586b1ed24](https://user-images.githubusercontent.com/47406018/188348859-310819e4-3f5f-4844-9723-4e34f747e499.png)
+
+
+#### Tips
+キーボードで turtlebot3 を操作するコマンド、ナビで問題があった場合、ナビを落としてこちらを使用して手動操作する    
+起動中は常にコマンドを送るので、ナビ中は使用しないこと
+```
+roslaunch turtlebot3_teleop turtlebot3_teleop_key.launch
+```
 
 # 3. VPS自己位置 + Waypoint走行
 あらかじめ走行ルートを決定しておき、その経路をVPSの自己位置情報を使う走行方法
