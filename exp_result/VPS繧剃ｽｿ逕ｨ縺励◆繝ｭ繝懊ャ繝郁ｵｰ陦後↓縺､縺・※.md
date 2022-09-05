@@ -226,7 +226,114 @@ gitlab: [trajectory_planner.py](https://github.com/hirotaka001/connect-robot-to-
 gitlab: [robo_commander.py](https://github.com/hirotaka001/connect-robot-to-vps/tree/master/cam_subscriber/script/robo_commander.py)
 
 ## 実行&走行方法
-[Growiに記載](https://growi.sig.kddilabs.jp/user/xta-tadanou/20220317_VPSによるturtlebot3自動走行手順)
+## 端末情報
+| 端末       | IP            | 詳細                   |
+| ---------- | ------------- | ---------------------- |
+| Turtlebot3 | 192.168.11.11 | 走行ロボ               |
+| miniPC     | 192.168.11.5  |                        |
+| 通信M      | 192.168.11.2  | ロボへ走行コマンド送信 |
+| VPSサーバ           | 172.19.73.224              |                        |
+
+## VPSについて
+VPSサーバは起動済みで、APIが使用できる状態であること
+
+## ロボ準備
+**実験後は必ずバッテリーを外す事**
+1. Turtlebot3 のバッテリーを充電する
+2. Turtlebot3 をバッテリー駆動に切り替える
+3. PCから ssh pi@192.168.11.11 で接続できることを確認  
+(稀に繋がらないことがあるので、その場合 OpenCR の電源スイッチをON/OFF で再起動する)  
+※ OpenCR は ラズパイ の下にあるボードのこと
+
+## Waypointについて
+`cam_subscriber/script/trajectory_planner.py`にハードコーディングしてある  
+ルートを変更したい場合  
+1. 各waypoint上でVPSの結果を取得
+2. 取得したVPS座標を trajectory_planner.py の配列に格納する  
+
+## 手順
+各種端末に ssh でログインして操作する必要があるが、ここでは miniPC からの操作を想定している  
+4つのターミナルを使用し、Terminak1から順に実施すること
+
+### 1.Terminal1(Turtlebot3)
+roscore & turtlebot3基本ノード & カメラノードを起動する  
+※Lidarを繋いでいない場合、エラーがでるが無視する
+1. ssh pi@192.168.11.11 <!-- turtlebot -->
+2. ping 192.168.11.2 (通信Mへpingを打って、疎通確認)
+3. cd catkin_ws
+4. ./tb3-bringup.sh
+
+### 2.Terminal2(通信M)
+1. ssh pi@192.168.11.2 <!-- rbag123456 -->
+2. source ~/.bashrc
+3. sh ros_catkin_ws/src/connect-robot-to-platform/scripts/launch_dongle.sh  
+**Tips1**
+コントローラから1回目のコマンドを受けた後エラーになることが多い。  
+その場合 kill_dongle.sh 実行後、再度 launch_dongle.sh すること  
+その他、調子がおかしくなったら kill_dongle.sh → launch_dongle.sh を実行する  
+**Tips2**
+Turtlebot3のroscoreが起動しているにも関わらず、ROSマスタに繋がらないエラーが表示されることがある。  
+その場合、Turtlebot3のターミナルから ping 192.168.11.2 を実行することで繋がるようになる
+
+### 3.Terminal3(VPS結果をGrafanaに反映)
+VPSの結果をSubscribe＆GrafanaのDBへ格納するスクリプト  
+なお、このスクリプトを起動する時、DBのデータは一旦すべて消去される
+1. cd ~/w_dir/communication-module-experimental-tool/insert_vps_result
+1. python3 mqtt_sub_insert_db.py vps_result  
+
+### 4.ブラウザ(Grafana起動)
+ロボ位置確認用
+1. http://172.19.73.134:3000 を開く ユーザ名は 「admin」<!-- rbag123456 -->
+2. ページ左上の「General」をクリック  
+![6233020a49c406258696a567](https://user-images.githubusercontent.com/47406018/188350217-a321818c-7f3f-41e5-a734-f7e8a0b15595.png)
+3. 「Dashboard for my plugin」をクリック  
+![6233022749c406258696a594](https://user-images.githubusercontent.com/47406018/188350264-30265877-4d84-4a1b-a2a1-84a2bed146eb.png)
+4. ページ右上のデータ表示期間を「Last 1 hour」、データ更新感覚を「1s」に設定」  
+![6233027149c406258696a5d0](https://user-images.githubusercontent.com/47406018/188350271-34ae4217-f74c-488d-8f28-edc032e05e14.png)
+
+**Tips** Grafanaのダッシュボードにアクセスできない場合、サービスが起動しているか確認する  
+再起動後などは実行する必要あり  
+ステータス確認
+```
+sudo systemctl status grafana-server.service
+```
+サービス起動
+```
+sudo systemctl start grafana-server.service
+```
+
+<!--
+### 5.Terminal5(オプション ROSの地図を一緒に作る場合)
+1. roslaunch turtlebot3_slam turtlebot3_slam.launch   
+※ 実行すると rviz が立ち上がりマップが生成されているのが確認できます  
+※ turtlebot3 に Lidar を接続した状態で起動すること
+-->
+
+### 5.Turtlebot3 をスタート位置に移動
+waypoint のスタート地点へロボを移動させる
+
+### 6.Terminal4(ロボカメラ受信＆VPS実行等)
+
+1. cd ~/catkin_ws/src/cam_subscriber/script
+2. rosrun cam_subscriber cam_subscriber.py   
+3. カメラ映像のウィンドウをアクティブにした状態でキーボードの「s」を押下して自律走行を開始
+
+このノードは下記の機能を実行します。
+- Turtlebot3カメラ画像をSubscribe(ROS) 受信画像はウィンドウでも表示
+- カメラ画像をVPSへPOST&結果を受け取る(http)
+- VPS結果をMQTTでPublish(MQTT)
+- VPS結果を受けて、あらかじめ指定してあるWaypointへ自動走行    
+
+
+**Tips:停止させる時はロボットに「stop」命令が送られてきた後に、Ctrl−Cで止めること**  
+forward の時に止めると、ロボットが前進し続ける
+
+
+## 仮PF
+コントローラ操作を行う場合、下記を実行する。  
+**コントローラに使用するパッケージの関係で、仮PFで直接実行する必要がある(SSH経由ではエラー)**  
+コントローラを使用しない場合、この項目は必要ない
+1. python remote_control.py cmd_to_robot turlteobt3
 
 # 他
 - [VPS地図作成方法](https://github.com/hirotaka001/connect-robot-to-vps/tree/master/vps_manual/VPS%E5%9C%B0%E5%9B%B3%E4%BD%9C%E6%88%90%E6%96%B9%E6%B3%95.md)
